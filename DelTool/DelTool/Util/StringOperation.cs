@@ -20,7 +20,17 @@ namespace DelTool.Util
             if (fileType != null)
             {
                 var substring = path.Substring(0, path.Length - fileType.Length);
-                return substring;
+
+                // 解压出来有一个文件夹
+                if (Directory.Exists(substring))
+                {
+                    return substring;
+                }
+                else // 解压出来直接是文件
+                {
+                    return path;
+                }
+   
             }
             else
             {

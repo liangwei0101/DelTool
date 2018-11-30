@@ -11,6 +11,17 @@ namespace DelTool.Util
     public class FileHelper
     {
         /// <summary>
+        /// 获取文件名
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static string GetFileName(string path)
+        {
+            var fileName = path.Substring(path.LastIndexOf("\\", StringComparison.Ordinal) + 1, (path.LastIndexOf(".", StringComparison.Ordinal) - path.LastIndexOf("\\", StringComparison.Ordinal) - 1)); //文件名
+            return fileName;
+        }
+
+        /// <summary>
         /// 删除文件夹（及文件夹下所有子文件夹和文件）
         /// </summary>
         /// <param name="directoryPath"></param>

@@ -7,6 +7,7 @@ using DelTool.Models;
 using DelTool.Util;
 using GalaSoft.MvvmLight.Command;
 using Microsoft.Win32;
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace DelTool.ViewModels
 {
@@ -26,6 +27,17 @@ namespace DelTool.ViewModels
         public virtual void Dispose() { }
 
         #region 公有变量
+
+        private ObservableCollection<TreeModel> _fileTreeList;
+        public ObservableCollection<TreeModel> FileTreeList
+        {
+            get { return _fileTreeList; }
+            set
+            {
+                _fileTreeList = value;
+                OnPropertyChanged("FileTreeList");
+            }
+        }
 
         private TreeModel _fileTree;
         public TreeModel FileTree
@@ -61,33 +73,38 @@ namespace DelTool.ViewModels
 
         private void CreateOneLevelTree(string nodeName)
         {
-            var pathInfo = new DirectoryInfo(nodeName);
-            if (pathInfo.Parent != null)
-            {
-                string newPath = pathInfo.Parent.FullName;
-                FileTree.NodeName = newPath;
-                FileTree.Type = ResourcesType.Directory;
-                FileTree.Nodes = new ObservableCollection<TreeModel>();
-            }
+            FileTree.NodeName = nodeName;
+            FileTree.Type = ResourcesType.Directory;
+            FileTree.Nodes = new ObservableCollection<TreeModel>();
         }
 
         private void InitData()
         {
             FileTree = new TreeModel();
+            FileTreeList = new ObservableCollection<TreeModel>();
         }
 
         private void SelectionPathAction()
         {
-            var ofd = new OpenFileDialog
+            var dialog = new CommonOpenFileDialog
             {
-                Title = "请选择文件",
+                IsFolderPicker = true,
                 Multiselect = true
             };
-            ofd.ShowDialog();
-            var fileNames = ofd.FileNames;
-            FilePathShow(fileNames);
-            FileUnZipOrRar(fileNames);
-              
+            var aa = dialog.ShowDialog();
+
+            var aa11 = dialog.FileNames;
+
+            //var ofd = new OpenFileDialog
+            //{
+            //    Title = "请选择文件夹",
+            //    Multiselect = true
+            //};
+            //ofd.ShowDialog();
+            //var fileNames = ofd.FileNames;
+            //FilePathShow(fileNames);
+            //FileUnZipOrRar(fileNames);
+
         }
 
         private void FilePathShow(string[] fileNames)
@@ -103,26 +120,35 @@ namespace DelTool.ViewModels
         {
             foreach (var item in fileNames)
             {
-                TreeModel treeModel = new TreeModel();
-
                 // 获取当前的路径
-                var folderPath =  Path.GetDirectoryName(item);
+                var folderPath = Path.GetDirectoryName(item);
                 // 解压文件
                 RarClass.UnRar(item, folderPath);
                 // 删除原来的文件
                 File.Delete(item);
                 // 获取：路径+文件名称
                 var folder = StringOperation.FilePthAndName(item);
-                // 压缩
-                RarClass.Rar(folder, folderPath);
-                // 创建一级树
-                CreateOneLevelTree(folder);
-                // 创建树
-                FileHelper.GetDirectory(FileTree.Nodes, folder, 2);
 
-                var aa = FileTree;
+                if (item == folder) // 说明直接解压出来的文件，没有新建一个文件夹
+                {
+                    // 压缩
+                    //RarClass.Rar(rarPath, folderPath);
+                }
+                else // 解压后，有一个文件夹
+                {
+                    // 压缩
+                    RarClass.Rar(folder, folderPath);
+                }        
+                // 获取文件名称
+                var directoryName = FileHelper.GetFileName(item);
+                // 创建一级树
+                CreateOneLevelTree(directoryName);
+                // 创建文件树
+                FileHelper.GetDirectory(FileTree.Nodes, folder, 2);
+                // 创建树集合
+                FileTreeList.Add(FileTree);
                 // 删除文件
-                FileHelper.DeleteFolder(folder);
+                //FileHelper.DeleteFolder(folder);
             }
         }
 

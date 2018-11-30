@@ -7,6 +7,7 @@
         xmlns:view="clr-namespace:DelTool.Views"
         xmlns:vm="clr-namespace:DelTool.ViewModels"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:domain="clr-namespace:DelTool.Models"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         TextElement.FontWeight="Regular"
         TextElement.FontSize="13"
@@ -15,14 +16,19 @@
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="{DynamicResource MaterialDesignFont}"
         Title="批量工具"
-        Height="450" Width="725">
+        Height="700" Width="1000">
     <!--Using this Base Class Data Context will allow xaml to bind variables to a concrete View Model at compile time-->
     <Window.DataContext>
         <vm:MainWindowVm/>
     </Window.DataContext>
     <Grid VerticalAlignment="Top"
           HorizontalAlignment="Center">
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition />
+        </Grid.RowDefinitions>
         <StackPanel Margin="0,30,0,0"
+                    Grid.Row="0"
                     Orientation="Horizontal">
             <TextBox Style="{DynamicResource MaterialDesignOutlinedTextFieldTextBox}"
                      VerticalAlignment="Top"
@@ -41,6 +47,22 @@
                     Command="{Binding SelectionPathCommand}"
                     ToolTip="Resource name: MaterialDesignRaisedButton"/>
         </StackPanel>
+
+        <TreeView Grid.Row="1"
+                  Margin="0,20,0,0"
+                  ItemsSource="{Binding FileTreeList}"
+                  ScrollViewer.VerticalScrollBarVisibility="Visible"
+                  MinWidth="220"
+                  MaxWidth="500"
+                  MaxHeight="500">
+            <TreeView.Resources>
+                <HierarchicalDataTemplate DataType="{x:Type domain:TreeModel}"
+                                          ItemsSource="{Binding Nodes}">
+                    <TextBlock Text="{Binding NodeName}"
+                               Margin="3 2" />
+                </HierarchicalDataTemplate>
+            </TreeView.Resources>
+        </TreeView>
 
     </Grid>
 </Window>
