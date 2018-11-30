@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Windows.Input;
 using DelTool.Models;
 using DelTool.Util;
@@ -93,7 +94,7 @@ namespace DelTool.ViewModels
             };
             var aa = dialog.ShowDialog();
 
-            var aa11 = dialog.FileNames;
+            var fileNames = dialog.FileNames;
 
             //var ofd = new OpenFileDialog
             //{
@@ -102,12 +103,14 @@ namespace DelTool.ViewModels
             //};
             //ofd.ShowDialog();
             //var fileNames = ofd.FileNames;
-            //FilePathShow(fileNames);
-            //FileUnZipOrRar(fileNames);
+
+            var enumerable = fileNames as string[] ?? fileNames.ToArray();
+            FilePathShow(enumerable);
+            FileUnZipOrRar(enumerable);
 
         }
 
-        private void FilePathShow(string[] fileNames)
+        private void FilePathShow(IEnumerable<string> fileNames)
         {
             FilePath = "";
             foreach (var item in fileNames)
@@ -116,39 +119,43 @@ namespace DelTool.ViewModels
             }
         }
 
-        private void FileUnZipOrRar(string[] fileNames)
+        private void FileUnZipOrRar(IEnumerable<string> fileNames)
         {
             foreach (var item in fileNames)
             {
-                // 获取当前的路径
-                var folderPath = Path.GetDirectoryName(item);
-                // 解压文件
-                RarClass.UnRar(item, folderPath);
-                // 删除原来的文件
-                File.Delete(item);
-                // 获取：路径+文件名称
-                var folder = StringOperation.FilePthAndName(item);
+                DirectoryInfo root = new DirectoryInfo(item);
+                FileInfo[] files = root.GetFiles();
 
-                if (item == folder) // 说明直接解压出来的文件，没有新建一个文件夹
+                foreach (var file in files)
                 {
-                    // 压缩
-                    //RarClass.Rar(rarPath, folderPath);
+                    // 解压文件
+                    RarClass.UnRar(file.FullName, item);
+                    // 删除原来的文件
+                    File.Delete(file.FullName);
+                    // 获取：路径+文件名称
+                    var folder = StringOperation.FilePthAndName(item);
+
+                    if (item == folder) // 说明直接解压出来的文件，没有新建一个文件夹
+                    {
+                        // 压缩
+                        //RarClass.Rar(rarPath, folderPath);
+                    }
+                    else // 解压后，有一个文件夹
+                    {
+                        // 压缩
+                        RarClass.Rar(folder, item);
+                    }
+                    // 获取文件名称
+                    var directoryName = FileHelper.GetFileName(item);
+                    // 创建一级树
+                    CreateOneLevelTree(directoryName);
+                    // 创建文件树
+                    FileHelper.GetDirectory(FileTree.Nodes, folder, 2);
+                    // 创建树集合
+                    FileTreeList.Add(FileTree);
+                    // 删除文件
+                    //FileHelper.DeleteFolder(folder);
                 }
-                else // 解压后，有一个文件夹
-                {
-                    // 压缩
-                    RarClass.Rar(folder, folderPath);
-                }        
-                // 获取文件名称
-                var directoryName = FileHelper.GetFileName(item);
-                // 创建一级树
-                CreateOneLevelTree(directoryName);
-                // 创建文件树
-                FileHelper.GetDirectory(FileTree.Nodes, folder, 2);
-                // 创建树集合
-                FileTreeList.Add(FileTree);
-                // 删除文件
-                //FileHelper.DeleteFolder(folder);
             }
         }
 
