@@ -109,7 +109,7 @@ namespace DelTool.Util
                 throw new Exception("未安装WinRAR程序。");
             }
 
-            if (!Directory.Exists(filePath))
+            if (!Directory.Exists(@filePath))
             {
                 throw new Exception("文件不存在！");  
             }

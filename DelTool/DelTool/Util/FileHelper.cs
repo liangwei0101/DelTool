@@ -95,6 +95,7 @@ namespace DelTool.Util
                 var treeModel = new TreeModel
                 {
                     NodeName = f.Name,
+                    CurrNodeName = f.Name,
                     Type = ResourcesType.File,
                     Nodes = new ObservableCollection<TreeModel>()
                 };
@@ -111,6 +112,7 @@ namespace DelTool.Util
                 var treeModel = new TreeModel
                 {
                     NodeName = d.FullName,
+                    CurrNodeName = d.Name,
                     Type = ResourcesType.Directory,
                     Nodes = new ObservableCollection<TreeModel>()
                 };
@@ -119,6 +121,47 @@ namespace DelTool.Util
                 if (firstOrDefault != null)
                     GetDirectory(firstOrDefault.Nodes, d.FullName, indent + 2);
             }
+        }
+
+        /// <summary>
+        /// 查找相同的文件夹
+        /// </summary>
+        public static void GetSameDirectory(ObservableCollection<TreeModel> fileObservableCollection)
+        {
+            for (int i = 0; i < fileObservableCollection.Count - 1; i++)
+            {
+                for (int j = fileObservableCollection.Count - 1; i != j; j--)
+                {
+                    TreeModel aa11 = new TreeModel();
+                    var aa = FindDirectory("我是五级目录", fileObservableCollection[j].Nodes, aa11);
+                }
+            }
+        }
+
+
+        public static TreeModel FindDirectory(string key, ObservableCollection<TreeModel> fileObservableObj , TreeModel obj)
+        {
+            if (fileObservableObj.Count == 0)
+                return null;
+            else
+            {
+                foreach (var item in fileObservableObj)
+                {
+                    if (key == item.CurrNodeName)
+                    {
+                        obj = item;
+                        break;
+                    }
+                    else
+                    {
+                        FindDirectory(key, item.Nodes, obj);
+                    }
+                }
+                return null;
+            }
+
+
+
         }
     }
 }

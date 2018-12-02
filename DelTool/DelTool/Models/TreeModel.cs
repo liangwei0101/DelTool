@@ -10,6 +10,17 @@ namespace DelTool.Models
 {
     public class TreeModel : INotifyPropertyChanged
     {
+        private string _currNodeName;
+        public string CurrNodeName
+        {
+            get { return _currNodeName; }
+            set
+            {
+                _currNodeName = value;
+                OnPropertyChanged("CurrNodeName");
+            }
+        }
+
         private string _nodeName;
         public string NodeName
         {

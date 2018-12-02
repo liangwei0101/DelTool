@@ -74,6 +74,7 @@ namespace DelTool.ViewModels
 
         private void CreateOneLevelTree(string nodeName)
         {
+            FileTree = new TreeModel();
             FileTree.NodeName = nodeName;
             FileTree.Type = ResourcesType.Directory;
             FileTree.Nodes = new ObservableCollection<TreeModel>();
@@ -81,7 +82,6 @@ namespace DelTool.ViewModels
 
         private void InitData()
         {
-            FileTree = new TreeModel();
             FileTreeList = new ObservableCollection<TreeModel>();
         }
 
@@ -131,31 +131,47 @@ namespace DelTool.ViewModels
                     // 解压文件
                     RarClass.UnRar(file.FullName, item);
                     // 删除原来的文件
-                    File.Delete(file.FullName);
-                    // 获取：路径+文件名称
-                    var folder = StringOperation.FilePthAndName(item);
+                    //File.Delete(file.FullName);
 
-                    if (item == folder) // 说明直接解压出来的文件，没有新建一个文件夹
+                    bool isHasParentDirectoryName = false;
+                    var unZipName = "";
+                    FileSystemInfo[] fsinfos;
+
+                    // 获取：获取解压后的文件名称
+                    var folder = StringOperation.FilePthAndName(file.FullName, out isHasParentDirectoryName);
+
+                    if (!isHasParentDirectoryName) // 解压出来又一级目录
                     {
-                        // 压缩
-                        //RarClass.Rar(rarPath, folderPath);
-                    }
-                    else // 解压后，有一个文件夹
-                    {
+                        unZipName = folder + Path.GetExtension(file.FullName);
+
                         // 压缩
                         RarClass.Rar(folder, item);
                     }
-                    // 获取文件名称
-                    var directoryName = FileHelper.GetFileName(item);
+                    else // 直接解压，没有目录
+                    {
+                        unZipName = folder;
+                        var dir= Path.GetDirectoryName(file.FullName);
+                        DirectoryInfo d = new DirectoryInfo(dir);
+                        fsinfos = d.GetFileSystemInfos();
+
+                        var path = Path.GetDirectoryName(file.FullName);
+                        // 压缩
+                        foreach (var fileInfo in fsinfos)
+                        {
+                            RarClass.Rar(fileInfo.FullName, path);
+                        }             
+                    }
                     // 创建一级树
-                    CreateOneLevelTree(directoryName);
+                    CreateOneLevelTree(file.Name);
                     // 创建文件树
                     FileHelper.GetDirectory(FileTree.Nodes, folder, 2);
                     // 创建树集合
                     FileTreeList.Add(FileTree);
-                    // 删除文件
-                    //FileHelper.DeleteFolder(folder);
+                    //// 删除文件
+                    ////FileHelper.DeleteFolder(folder);       
                 }
+
+                FileHelper.GetSameDirectory(FileTreeList);
             }
         }
 

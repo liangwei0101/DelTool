@@ -13,7 +13,7 @@ namespace DelTool.Util
         /// 文件路径+名称
         /// </summary>
         /// <returns></returns>
-        public static string FilePthAndName(string path)
+        public static string FilePthAndName(string path ,out bool isHasParentDirectoryName)
         {
             var fileType = Path.GetExtension(path);
 
@@ -24,16 +24,19 @@ namespace DelTool.Util
                 // 解压出来有一个文件夹
                 if (Directory.Exists(substring))
                 {
+                    isHasParentDirectoryName = false;
                     return substring;
                 }
                 else // 解压出来直接是文件
                 {
+                    isHasParentDirectoryName = true;
                     return path;
                 }
    
             }
             else
             {
+                isHasParentDirectoryName = false;
                 return string.Empty;
             }
         }
