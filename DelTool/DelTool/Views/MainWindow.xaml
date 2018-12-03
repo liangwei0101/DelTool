@@ -24,19 +24,21 @@
     <Grid VerticalAlignment="Top"
           HorizontalAlignment="Center">
         <Grid.RowDefinitions>
-            <RowDefinition/>
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
             <RowDefinition />
         </Grid.RowDefinitions>
         <StackPanel Margin="0,30,0,0"
                     Grid.Row="0"
                     Orientation="Horizontal">
-            <TextBox Style="{DynamicResource MaterialDesignOutlinedTextFieldTextBox}"
-                     VerticalAlignment="Top"
-                     AcceptsReturn="True"
-                     TextWrapping="Wrap"
+            <TextBox VerticalAlignment="Top"
                      MaxWidth="400"
                      MinWidth="250"
-                     Height="60"                    
+                     Height="30"
                      Text="{Binding FilePath}"
                      ToolTip="{Binding FilePath}"
                      materialDesign:HintAssist.Hint="路径" />
@@ -45,16 +47,60 @@
                     Margin="20,0,0,0"
                     Content=" 选择路径"
                     Command="{Binding SelectionPathCommand}"
-                    ToolTip="Resource name: MaterialDesignRaisedButton"/>
+                    ToolTip="请选择压缩文件所在的文件夹"/>
         </StackPanel>
 
         <TreeView Grid.Row="1"
                   Margin="0,20,0,0"
                   ItemsSource="{Binding FileTreeList}"
-                  ScrollViewer.VerticalScrollBarVisibility="Visible"
-                  MinWidth="220"
-                  MaxWidth="500"
-                  MaxHeight="500">
+                  ScrollViewer.VerticalScrollBarVisibility="Visible"                  
+                  MaxHeight="500"
+                  MaxWidth="500">
+            <TreeView.Resources>
+                <HierarchicalDataTemplate DataType="{x:Type domain:TreeModel}"
+                                          ItemsSource="{Binding Nodes}">
+                    <TextBlock Text="{Binding NodeName}"
+                               Margin="3 2" />
+                </HierarchicalDataTemplate>
+            </TreeView.Resources>
+        </TreeView>
+        
+        <StackPanel Margin="0,20,0,0"
+                    MaxWidth="580"
+                    MaxHeight="580"
+                    Height="auto"
+                    Visibility="{Binding PanelVisibility}"
+                    Orientation="Horizontal"
+                    Grid.Row="2" >
+            <TextBox x:Name="CommentTextBox"
+                     Text="{Binding SearchStr, UpdateSourceTrigger=PropertyChanged}"
+                     materialDesign:HintAssist.Hint="请输入要查找的文件或者文件夹关键字">
+                <TextBox.InputBindings>
+                    <!--键盘事件绑定-->
+                    <KeyBinding Command="{Binding SearchDirectoryOrFileCommand}"
+                                Key="Enter" />
+                </TextBox.InputBindings>
+            </TextBox>
+                <Button Style="{DynamicResource MaterialDesignRaisedButton}"
+                    Width="100"
+                    Margin="45,0,0,0"
+                    Content="确定"
+                    ToolTip="确定"
+                    Command="{Binding SearchDirectoryOrFileCommand}"/>
+        </StackPanel>
+
+        <TextBlock  Text="{Binding SameTextShow}"
+                    Margin="0,50,0,0"
+                    Grid.Row="3"
+                    Visibility="{Binding SameFileOrDirPanelVisibility}"
+                    Style="{DynamicResource MaterialDesignTitleTextBlock}" />
+        
+        <TreeView Margin="0,20,0,0"
+                  Grid.Row="4"
+                  Visibility="{Binding SameFileOrDirPanelVisibility}"
+                  ItemsSource="{Binding SameFileOrDirTreeList}"
+                  MaxHeight="300"
+                  MaxWidth="500">
             <TreeView.Resources>
                 <HierarchicalDataTemplate DataType="{x:Type domain:TreeModel}"
                                           ItemsSource="{Binding Nodes}">
@@ -64,5 +110,16 @@
             </TreeView.Resources>
         </TreeView>
 
+        <Grid Grid.Row="5"
+              VerticalAlignment="Center">
+            <Button Visibility="{Binding DelVisibility}"
+                    Style="{DynamicResource MaterialDesignRaisedButton}"
+                    Margin="0,60,0,0"
+                    Width="100"
+                    Height="30"                   
+                    Content="删除"
+                    ToolTip="删除"
+                    Command="{Binding DelCommand}" />
+        </Grid>
     </Grid>
 </Window>

@@ -3,10 +3,14 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Windows;
 using System.Windows.Input;
 using DelTool.Models;
 using DelTool.Util;
 using GalaSoft.MvvmLight.Command;
+using log4net;
+using MaterialDesignThemes.Wpf;
 using Microsoft.Win32;
 using Microsoft.WindowsAPICodePack.Dialogs;
 
@@ -19,6 +23,7 @@ namespace DelTool.ViewModels
     //  Using this Base Class will allow xaml to bind variables to a concrete View Model at compile time
     public class MainWindowVm : ViewModelBase, IDisposable, INotifyPropertyChanged
     {
+        private string _delStr;
 
         public MainWindowVm()
         {
@@ -29,6 +34,51 @@ namespace DelTool.ViewModels
 
         #region 公有变量
 
+        private Visibility _delVisibility;
+        public Visibility DelVisibility
+        {
+            get { return _delVisibility; }
+            set
+            {
+                _delVisibility = value;
+                OnPropertyChanged("DelVisibility");
+            }
+        }
+
+        private string _sameTextShow;
+        public string SameTextShow
+        {
+            get { return _sameTextShow; }
+            set
+            {
+                _sameTextShow = value;
+                OnPropertyChanged("SameTextShow");
+            }
+        }
+
+
+        private Visibility _sameFileOrDirPanelVisibility;
+        public Visibility SameFileOrDirPanelVisibility
+        {
+            get { return _sameFileOrDirPanelVisibility; }
+            set
+            {
+                _sameFileOrDirPanelVisibility = value;
+                OnPropertyChanged("SameFileOrDirPanelVisibility");
+            }
+        }
+
+        private Visibility _panelVisibility;
+        public Visibility PanelVisibility
+        {
+            get { return _panelVisibility; }
+            set
+            {
+                _panelVisibility = value;
+                OnPropertyChanged("PanelVisibility");
+            }
+        }
+
         private ObservableCollection<TreeModel> _fileTreeList;
         public ObservableCollection<TreeModel> FileTreeList
         {
@@ -37,6 +87,17 @@ namespace DelTool.ViewModels
             {
                 _fileTreeList = value;
                 OnPropertyChanged("FileTreeList");
+            }
+        }
+
+        private ObservableCollection<TreeModel> _sameFileOrDirTreeList;
+        public ObservableCollection<TreeModel> SameFileOrDirTreeList
+        {
+            get { return _sameFileOrDirTreeList; }
+            set
+            {
+                _sameFileOrDirTreeList = value;
+                OnPropertyChanged("SameFileOrDirTreeList");
             }
         }
 
@@ -62,9 +123,24 @@ namespace DelTool.ViewModels
             }
         }
 
+        private string _searchStr;
+        public string SearchStr
+        {
+            get { return _searchStr; }
+            set
+            {
+                _searchStr = value;
+                OnPropertyChanged("SearchStr");
+            }
+        }
+
         #endregion
 
         #region 命令
+
+        public ICommand DelCommand => new RelayCommand(DelAction);
+
+        public ICommand SearchDirectoryOrFileCommand => new RelayCommand(SearchDirectoryOrFileAction);
 
         public ICommand SelectionPathCommand => new RelayCommand(SelectionPathAction);
 
@@ -72,16 +148,105 @@ namespace DelTool.ViewModels
 
         #region 私有函数
 
-        private void CreateOneLevelTree(string nodeName)
+        private void DelAction()
+        {
+            if (string.IsNullOrWhiteSpace(_delStr))
+                return;
+            try
+            {
+                foreach (var item in FileTreeList)
+                {
+                    var fileOrDir = FileHelper.FindSameDirectoryOrFile(_delStr, item.Nodes);
+                    if (fileOrDir != null)
+                    {
+                        FileHelper.DeleteFolder(fileOrDir.NodeName);
+                    }
+                }
+
+                foreach (var item in FileTreeList)
+                {
+                    // 压缩
+                    RarClass.Rar(item.CurrNodeName, FilePath);
+                    // 删除文件
+                    FileHelper.DeleteFolder(item.CurrNodeName);    
+                }
+
+                MessageBox.Show("操作成功");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }      
+        }
+
+        /// <summary>
+        /// 文件或者文件夹查询
+        /// </summary>
+        private void SearchDirectoryOrFileAction()
+        {
+            if (!string.IsNullOrWhiteSpace(SearchStr.Trim()))
+            {
+                SameFileOrDirTreeList = new ObservableCollection<TreeModel>();
+                foreach (var item in FileTreeList)
+                {
+                    var treeModel = FileHelper.FindSameDirectoryOrFile(SearchStr, item.Nodes);
+                    if (treeModel != null)
+                    {
+                        SameFileOrDirTreeList.Add(treeModel);
+                    }
+                }
+                if (SameFileOrDirTreeList.Count > 0)
+                {
+                    // 增加一项
+                    var sampList = new ObservableCollection<TreeModel>();
+                    var firstOrDefault = SameFileOrDirTreeList.FirstOrDefault();
+                    if (firstOrDefault != null)
+                    {
+                        _delStr = firstOrDefault.CurrNodeName;
+                        var treeModel = new TreeModel
+                        {
+                            NodeName = "相同项：" + firstOrDefault.CurrNodeName,
+                            CurrNodeName = firstOrDefault.CurrNodeName,
+                            Nodes = new ObservableCollection<TreeModel>(SameFileOrDirTreeList)
+                        };
+                        sampList.Add(treeModel);
+                    }
+                    SameFileOrDirTreeList = new ObservableCollection<TreeModel>(sampList);
+
+                    SameTextShow = "相同项";
+                    DelVisibility = Visibility.Visible;
+                    SameFileOrDirPanelVisibility = Visibility.Visible;
+                }
+                else
+                {
+                    SameTextShow = "没有相同项";
+                    SameFileOrDirTreeList.Clear();
+                    SameFileOrDirPanelVisibility = Visibility.Visible;
+                }
+            }
+            else
+            {
+                MessageBox.Show("字段不能为空！");
+            }
+        }
+
+        private void CreateOneLevelTree(string fullName, string name)
         {
             FileTree = new TreeModel();
-            FileTree.NodeName = nodeName;
+            FileTree.NodeName = name;
+            FileTree.CurrNodeName = fullName;
             FileTree.Type = ResourcesType.Directory;
             FileTree.Nodes = new ObservableCollection<TreeModel>();
         }
 
         private void InitData()
         {
+            SameTextShow = "相同项";
+            DelVisibility = Visibility.Collapsed;
+            PanelVisibility = Visibility.Collapsed;
+            DelVisibility = Visibility.Collapsed;
+            SameFileOrDirPanelVisibility = Visibility.Collapsed;
             FileTreeList = new ObservableCollection<TreeModel>();
         }
 
@@ -90,24 +255,17 @@ namespace DelTool.ViewModels
             var dialog = new CommonOpenFileDialog
             {
                 IsFolderPicker = true,
-                Multiselect = true
+                Multiselect = false
             };
-            var aa = dialog.ShowDialog();
-
+            dialog.ShowDialog();
             var fileNames = dialog.FileNames;
 
-            //var ofd = new OpenFileDialog
-            //{
-            //    Title = "请选择文件夹",
-            //    Multiselect = true
-            //};
-            //ofd.ShowDialog();
-            //var fileNames = ofd.FileNames;
-
-            var enumerable = fileNames as string[] ?? fileNames.ToArray();
-            FilePathShow(enumerable);
-            FileUnZipOrRar(enumerable);
-
+            if (fileNames!=null)
+            {
+                var enumerable = fileNames as string[] ?? fileNames.ToArray();
+                FilePathShow(enumerable);
+                FileUnZipOrRar(enumerable);
+            }         
         }
 
         private void FilePathShow(IEnumerable<string> fileNames)
@@ -115,12 +273,14 @@ namespace DelTool.ViewModels
             FilePath = "";
             foreach (var item in fileNames)
             {
-                FilePath += item + ";" + "\n";
+                FilePath += item ;
             }
         }
 
         private void FileUnZipOrRar(IEnumerable<string> fileNames)
         {
+            var treeModelTemp = new ObservableCollection<TreeModel>();
+
             foreach (var item in fileNames)
             {
                 DirectoryInfo root = new DirectoryInfo(item);
@@ -131,47 +291,48 @@ namespace DelTool.ViewModels
                     // 解压文件
                     RarClass.UnRar(file.FullName, item);
                     // 删除原来的文件
-                    //File.Delete(file.FullName);
+                    File.Delete(file.FullName);
 
                     bool isHasParentDirectoryName = false;
-                    var unZipName = "";
-                    FileSystemInfo[] fsinfos;
 
                     // 获取：获取解压后的文件名称
                     var folder = StringOperation.FilePthAndName(file.FullName, out isHasParentDirectoryName);
 
-                    if (!isHasParentDirectoryName) // 解压出来又一级目录
-                    {
-                        unZipName = folder + Path.GetExtension(file.FullName);
+                    //if (!isHasParentDirectoryName) // 解压出来又一级目录
+                    //{
+                    //    // 压缩
+                    //    RarClass.Rar(folder, item);
+                    //}
+                    //else // 直接解压，没有目录
+                    //{
+                    //    var dir = Path.GetDirectoryName(file.FullName);
+                    //    var d = new DirectoryInfo(dir);
+                    //    var fsinfos = d.GetFileSystemInfos();
 
-                        // 压缩
-                        RarClass.Rar(folder, item);
-                    }
-                    else // 直接解压，没有目录
-                    {
-                        unZipName = folder;
-                        var dir= Path.GetDirectoryName(file.FullName);
-                        DirectoryInfo d = new DirectoryInfo(dir);
-                        fsinfos = d.GetFileSystemInfos();
+                    //    var path = Path.GetDirectoryName(file.FullName);
+                    //    // 压缩
+                    //    foreach (var fileInfo in fsinfos)
+                    //    {
+                    //        RarClass.Rar(fileInfo.FullName, path);
+                    //    }
+                    //}
 
-                        var path = Path.GetDirectoryName(file.FullName);
-                        // 压缩
-                        foreach (var fileInfo in fsinfos)
-                        {
-                            RarClass.Rar(fileInfo.FullName, path);
-                        }             
-                    }
+                    var oneLevelName = file.FullName.Replace(file.Extension, "");
+
                     // 创建一级树
-                    CreateOneLevelTree(file.Name);
+                    CreateOneLevelTree(oneLevelName, file.Name);
                     // 创建文件树
-                    FileHelper.GetDirectory(FileTree.Nodes, folder, 2);
+                    FileHelper.GetDirectory(FileTree.Nodes, folder);
                     // 创建树集合
-                    FileTreeList.Add(FileTree);
-                    //// 删除文件
-                    ////FileHelper.DeleteFolder(folder);       
-                }
+                    treeModelTemp.Add(FileTree);
 
-                FileHelper.GetSameDirectory(FileTreeList);
+                }
+            }
+
+            if (treeModelTemp.Count > 0)
+            {
+                FileTreeList = new ObservableCollection<TreeModel>(treeModelTemp);
+                PanelVisibility = Visibility.Visible;
             }
         }
 

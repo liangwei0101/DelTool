@@ -87,7 +87,7 @@ namespace DelTool.Util
         /// <param name="fileObservableCollection"></param>
         /// <param name="path"></param>
         /// <param name="indent"></param>
-        public static void GetDirectory(ObservableCollection<TreeModel> fileObservableCollection, string path, int indent)
+        public static void GetDirectory(ObservableCollection<TreeModel> fileObservableCollection, string path)
         {
             var root = new DirectoryInfo(path);
             foreach (FileInfo f in root.GetFiles())
@@ -119,49 +119,34 @@ namespace DelTool.Util
                 fileObservableCollection.Add(treeModel);
                 var firstOrDefault = fileObservableCollection.FirstOrDefault(s => s.NodeName == d.FullName);
                 if (firstOrDefault != null)
-                    GetDirectory(firstOrDefault.Nodes, d.FullName, indent + 2);
+                    GetDirectory(firstOrDefault.Nodes, d.FullName);
             }
         }
 
         /// <summary>
-        /// 查找相同的文件夹
+        /// 查找文件或者文件夹
         /// </summary>
-        public static void GetSameDirectory(ObservableCollection<TreeModel> fileObservableCollection)
+        /// <param name="key"></param>
+        /// <param name="fileObservableList"></param>
+        /// <returns></returns>
+        public static TreeModel FindSameDirectoryOrFile(string key, ObservableCollection<TreeModel> fileObservableList)
         {
-            for (int i = 0; i < fileObservableCollection.Count - 1; i++)
+            if (fileObservableList.Count > 0)
             {
-                for (int j = fileObservableCollection.Count - 1; i != j; j--)
-                {
-                    TreeModel aa11 = new TreeModel();
-                    var aa = FindDirectory("我是五级目录", fileObservableCollection[j].Nodes, aa11);
-                }
-            }
-        }
-
-
-        public static TreeModel FindDirectory(string key, ObservableCollection<TreeModel> fileObservableObj , TreeModel obj)
-        {
-            if (fileObservableObj.Count == 0)
-                return null;
-            else
-            {
-                foreach (var item in fileObservableObj)
+                foreach (var item in fileObservableList)
                 {
                     if (key == item.CurrNodeName)
+                        return item;
+
+                    if (item.Nodes.Count> 0)
                     {
-                        obj = item;
-                        break;
-                    }
-                    else
-                    {
-                        FindDirectory(key, item.Nodes, obj);
-                    }
+                        var treeModel = FindSameDirectoryOrFile(key, item.Nodes);
+                        if (treeModel != null)
+                            return treeModel;
+                    }   
                 }
-                return null;
-            }
-
-
-
+            }             
+            return null;
         }
     }
 }
