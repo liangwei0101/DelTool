@@ -14,4 +14,10 @@
 
 + 如下Gif图，每个文件中都有“我是四级目录”的文件夹
 
-+ ![image]( https://github.com/liangwei0101/DelTool/blob/master/%E6%96%87%E4%BB%B6%E7%A4%BA%E4%BE%8B.gif)
++ ![image](https://github.com/liangwei0101/DelTool/blob/master/FileShow.gif)
+
+## 操作指南
+
++ 如下Gif图，每个压缩文件都删除了有“我是四级目录”的文件夹
+
++ ![image](https://github.com/liangwei0101/DelTool/blob/master/ToolShow.gif) 
