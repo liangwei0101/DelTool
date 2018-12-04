@@ -168,14 +168,33 @@ namespace DelTool.ViewModels
                     // 压缩
                     RarClass.Rar(item.CurrNodeName, FilePath);
                     // 删除文件
-                    FileHelper.DeleteFolder(item.CurrNodeName);    
+                    FileHelper.DeleteFolder(item.CurrNodeName);
+
+                    //if (!isHasParentDirectoryName) // 解压出来又一级目录
+                    //{
+                    //    // 压缩
+                    //    RarClass.Rar(folder, item);
+                    //}
+                    //else // 直接解压，没有目录
+                    //{
+                    //    var dir = Path.GetDirectoryName(file.FullName);
+                    //    var d = new DirectoryInfo(dir);
+                    //    var fsinfos = d.GetFileSystemInfos();
+
+                    //    var path = Path.GetDirectoryName(file.FullName);
+                    //    // 压缩
+                    //    foreach (var fileInfo in fsinfos)
+                    //    {
+                    //        RarClass.Rar(fileInfo.FullName, path);
+                    //    }
+                    //}
                 }
 
-                MessageBox.Show("操作成功");
+                MessageBox.Show("操作成功！");
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                MessageBox.Show("操作失败！");
                 throw;
             }      
         }
@@ -296,26 +315,7 @@ namespace DelTool.ViewModels
                     bool isHasParentDirectoryName = false;
 
                     // 获取：获取解压后的文件名称
-                    var folder = StringOperation.FilePthAndName(file.FullName, out isHasParentDirectoryName);
-
-                    //if (!isHasParentDirectoryName) // 解压出来又一级目录
-                    //{
-                    //    // 压缩
-                    //    RarClass.Rar(folder, item);
-                    //}
-                    //else // 直接解压，没有目录
-                    //{
-                    //    var dir = Path.GetDirectoryName(file.FullName);
-                    //    var d = new DirectoryInfo(dir);
-                    //    var fsinfos = d.GetFileSystemInfos();
-
-                    //    var path = Path.GetDirectoryName(file.FullName);
-                    //    // 压缩
-                    //    foreach (var fileInfo in fsinfos)
-                    //    {
-                    //        RarClass.Rar(fileInfo.FullName, path);
-                    //    }
-                    //}
+                    var folder = StringOperation.FilePthAndName(file.FullName, out isHasParentDirectoryName);      
 
                     var oneLevelName = file.FullName.Replace(file.Extension, "");
 
