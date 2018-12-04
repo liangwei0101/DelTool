@@ -15,111 +15,141 @@
         TextOptions.TextRenderingMode="Auto"
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="{DynamicResource MaterialDesignFont}"
-        Title="批量工具"
         Height="700" Width="1000">
     <!--Using this Base Class Data Context will allow xaml to bind variables to a concrete View Model at compile time-->
     <Window.DataContext>
         <vm:MainWindowVm/>
     </Window.DataContext>
-    <Grid VerticalAlignment="Top"
-          HorizontalAlignment="Center">
+    <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition />
-            <RowDefinition />
-            <RowDefinition />
-            <RowDefinition />
-            <RowDefinition />
+            <RowDefinition Height="Auto"/>
             <RowDefinition />
         </Grid.RowDefinitions>
-        <StackPanel Margin="0,30,0,0"
-                    Grid.Row="0"
-                    Orientation="Horizontal">
-            <TextBox VerticalAlignment="Top"
-                     MaxWidth="400"
-                     MinWidth="250"
-                     Height="30"
-                     Text="{Binding FilePath}"
-                     ToolTip="{Binding FilePath}"
-                     materialDesign:HintAssist.Hint="路径" />
-            <Button Style="{DynamicResource MaterialDesignRaisedButton}"
-                    Width="100"
-                    Margin="20,0,0,0"
-                    Content=" 选择路径"
-                    Command="{Binding SelectionPathCommand}"
-                    ToolTip="请选择压缩文件所在的文件夹"/>
-        </StackPanel>
+        <Grid Grid.Row="0">
+            <materialDesign:ColorZone Mode="PrimaryMid"
+                                      Width="1000"
+                                      Padding="16">
+                <DockPanel>
+                    <materialDesign:PopupBox DockPanel.Dock="Right"
+                                             PlacementMode="BottomAndAlignRightEdges">
+                        <ListBox>
+                            <ListBoxItem>
+                                作者：liangwei
+                            </ListBoxItem>
+                        </ListBox>
+                    </materialDesign:PopupBox>
+                    <StackPanel Orientation="Horizontal">
+                        <ToggleButton Style="{DynamicResource MaterialDesignHamburgerToggleButton}" />
+                        <TextBlock VerticalAlignment="Center"
+                                   Margin="16 0 0 0">
+                            删除工具
+                        </TextBlock>
+                    </StackPanel>
+                </DockPanel>
+            </materialDesign:ColorZone>
+        </Grid>
+        <Grid Grid.Row="1"
+              VerticalAlignment="Top"
+              HorizontalAlignment="Center">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
 
-        <TreeView Grid.Row="1"
-                  Margin="0,20,0,0"
-                  ItemsSource="{Binding FileTreeList}"
-                  ScrollViewer.VerticalScrollBarVisibility="Visible"                  
-                  MaxHeight="500"
-                  MaxWidth="500">
-            <TreeView.Resources>
-                <HierarchicalDataTemplate DataType="{x:Type domain:TreeModel}"
-                                          ItemsSource="{Binding Nodes}">
-                    <TextBlock Text="{Binding NodeName}"
-                               Margin="3 2" />
-                </HierarchicalDataTemplate>
-            </TreeView.Resources>
-        </TreeView>
-        
-        <StackPanel Margin="0,20,0,0"
-                    MaxWidth="580"
-                    MaxHeight="580"
-                    Height="auto"
-                    Visibility="{Binding PanelVisibility}"
-                    Orientation="Horizontal"
-                    Grid.Row="2" >
-            <TextBox x:Name="CommentTextBox"
-                     Text="{Binding SearchStr, UpdateSourceTrigger=PropertyChanged}"
-                     materialDesign:HintAssist.Hint="请输入要查找的文件或者文件夹关键字">
-                <TextBox.InputBindings>
-                    <!--键盘事件绑定-->
-                    <KeyBinding Command="{Binding SearchDirectoryOrFileCommand}"
-                                Key="Enter" />
-                </TextBox.InputBindings>
-            </TextBox>
+            <StackPanel Margin="0,30,0,0"
+                        Grid.Row="0"
+                        Orientation="Horizontal">
+                <TextBox VerticalAlignment="Top"
+                         MaxWidth="400"
+                         MinWidth="250"
+                         Height="30"
+                         Text="{Binding FilePath}"
+                         ToolTip="{Binding FilePath}"
+                         materialDesign:HintAssist.Hint="路径" />
                 <Button Style="{DynamicResource MaterialDesignRaisedButton}"
-                    Width="100"
-                    Margin="45,0,0,0"
-                    Content="确定"
-                    ToolTip="确定"
-                    Command="{Binding SearchDirectoryOrFileCommand}"/>
-        </StackPanel>
+                        Width="100"
+                        Margin="20,0,0,0"
+                        Content=" 选择路径"
+                        Command="{Binding SelectionPathCommand}"
+                        ToolTip="请选择压缩文件所在的文件夹" />
+            </StackPanel>
 
-        <TextBlock  Text="{Binding SameTextShow}"
-                    Margin="0,50,0,0"
-                    Grid.Row="3"
-                    Visibility="{Binding SameFileOrDirPanelVisibility}"
-                    Style="{DynamicResource MaterialDesignTitleTextBlock}" />
-        
-        <TreeView Margin="0,20,0,0"
-                  Grid.Row="4"
-                  Visibility="{Binding SameFileOrDirPanelVisibility}"
-                  ItemsSource="{Binding SameFileOrDirTreeList}"
-                  MaxHeight="300"
-                  MaxWidth="500">
-            <TreeView.Resources>
-                <HierarchicalDataTemplate DataType="{x:Type domain:TreeModel}"
-                                          ItemsSource="{Binding Nodes}">
-                    <TextBlock Text="{Binding NodeName}"
-                               Margin="3 2" />
-                </HierarchicalDataTemplate>
-            </TreeView.Resources>
-        </TreeView>
+            <TreeView Grid.Row="1"
+                      Margin="0,20,0,0"
+                      ItemsSource="{Binding FileTreeList}"
+                      ScrollViewer.VerticalScrollBarVisibility="Visible"
+                      MaxHeight="500"
+                      MaxWidth="500">
+                <TreeView.Resources>
+                    <HierarchicalDataTemplate DataType="{x:Type domain:TreeModel}"
+                                              ItemsSource="{Binding Nodes}">
+                        <TextBlock Text="{Binding NodeName}"
+                                   Margin="3 2" />
+                    </HierarchicalDataTemplate>
+                </TreeView.Resources>
+            </TreeView>
 
-        <Grid Grid.Row="5"
-              VerticalAlignment="Center">
-            <Button Visibility="{Binding DelVisibility}"
-                    Style="{DynamicResource MaterialDesignRaisedButton}"
-                    Margin="0,60,0,0"
-                    Width="100"
-                    Height="30"                   
-                    Content="删除"
-                    ToolTip="删除"
-                    Command="{Binding DelCommand}" />
+            <StackPanel Margin="0,20,0,0"
+                        MaxWidth="580"
+                        MaxHeight="580"
+                        Height="auto"
+                        Visibility="{Binding PanelVisibility}"
+                        Orientation="Horizontal"
+                        Grid.Row="2">
+                <TextBox x:Name="CommentTextBox"
+                         Text="{Binding SearchStr, UpdateSourceTrigger=PropertyChanged}"
+                         materialDesign:HintAssist.Hint="请输入要查找的文件或者文件夹关键字">
+                    <TextBox.InputBindings>
+                        <!--键盘事件绑定-->
+                        <KeyBinding Command="{Binding SearchDirectoryOrFileCommand}"
+                                    Key="Enter" />
+                    </TextBox.InputBindings>
+                </TextBox>
+                <Button Style="{DynamicResource MaterialDesignRaisedButton}"
+                        Width="100"
+                        Margin="45,0,0,0"
+                        Content="确定"
+                        ToolTip="确定"
+                        Command="{Binding SearchDirectoryOrFileCommand}" />
+            </StackPanel>
+
+            <TextBlock  Text="{Binding SameTextShow}"
+                        Margin="0,50,0,0"
+                        Grid.Row="3"
+                        Visibility="{Binding SameFileOrDirPanelVisibility}"
+                        Style="{DynamicResource MaterialDesignTitleTextBlock}" />
+
+            <TreeView Margin="0,20,0,0"
+                      Grid.Row="4"
+                      Visibility="{Binding SameFileOrDirPanelVisibility}"
+                      ItemsSource="{Binding SameFileOrDirTreeList}"
+                      MaxHeight="300"
+                      MaxWidth="500">
+                <TreeView.Resources>
+                    <HierarchicalDataTemplate DataType="{x:Type domain:TreeModel}"
+                                              ItemsSource="{Binding Nodes}">
+                        <TextBlock Text="{Binding NodeName}"
+                                   Margin="3 2" />
+                    </HierarchicalDataTemplate>
+                </TreeView.Resources>
+            </TreeView>
+
+            <Grid Grid.Row="5"
+                  VerticalAlignment="Center">
+                <Button Visibility="{Binding DelVisibility}"
+                        Style="{DynamicResource MaterialDesignRaisedButton}"
+                        Margin="0,60,0,0"
+                        Width="100"
+                        Height="30"
+                        Content="删除"
+                        ToolTip="删除"
+                        Command="{Binding DelCommand}" />
+            </Grid>
         </Grid>
     </Grid>
 </Window>

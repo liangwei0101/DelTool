@@ -334,6 +334,10 @@ namespace DelTool.ViewModels
                 FileTreeList = new ObservableCollection<TreeModel>(treeModelTemp);
                 PanelVisibility = Visibility.Visible;
             }
+            else
+            {
+                MessageBox.Show("没有压缩文件！");
+            }
         }
 
         #endregion
