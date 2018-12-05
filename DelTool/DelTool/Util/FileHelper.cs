@@ -11,6 +11,25 @@ namespace DelTool.Util
     public class FileHelper
     {
         /// <summary>
+        /// 创建一个文件夹
+        /// </summary>
+        public static string CrateFolder(string path)
+        {
+            if (path.Contains(".rar"))
+            {
+                var strings = path.Split(new string[]{ ".rar"}, StringSplitOptions.RemoveEmptyEntries);
+                if (false == Directory.Exists(strings[0]))
+                {
+                    //创建pic文件夹
+                    Directory.CreateDirectory(strings[0]);
+
+                    return strings[0];
+                }
+            }
+            return string.Empty;
+        }
+
+        /// <summary>
         /// 获取文件名
         /// </summary>
         /// <param name="path"></param>
@@ -94,7 +113,7 @@ namespace DelTool.Util
             {
                 var treeModel = new TreeModel
                 {
-                    NodeName = f.Name,
+                    NodeName = f.FullName,
                     CurrNodeName = f.Name,
                     Type = ResourcesType.File,
                     Nodes = new ObservableCollection<TreeModel>()

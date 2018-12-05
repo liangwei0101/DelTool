@@ -24,6 +24,7 @@ namespace DelTool.ViewModels
     public class MainWindowVm : ViewModelBase, IDisposable, INotifyPropertyChanged
     {
         private string _delStr;
+        private string _newFolderStr;
 
         public MainWindowVm()
         {
@@ -152,51 +153,58 @@ namespace DelTool.ViewModels
         {
             if (string.IsNullOrWhiteSpace(_delStr))
                 return;
-            try
+            //try
+            //{
+            foreach (var item in FileTreeList)
             {
-                foreach (var item in FileTreeList)
+                var fileOrDir = FileHelper.FindSameDirectoryOrFile(_delStr, item.Nodes);
+                if (fileOrDir != null)
                 {
-                    var fileOrDir = FileHelper.FindSameDirectoryOrFile(_delStr, item.Nodes);
-                    if (fileOrDir != null)
+                    if (fileOrDir.Type == ResourcesType.Directory)
                     {
                         FileHelper.DeleteFolder(fileOrDir.NodeName);
                     }
-                }
-
-                foreach (var item in FileTreeList)
-                {
-                    // 压缩
-                    RarClass.Rar(item.CurrNodeName, FilePath);
-                    // 删除文件
-                    FileHelper.DeleteFolder(item.CurrNodeName);
-
-                    //if (!isHasParentDirectoryName) // 解压出来又一级目录
-                    //{
-                    //    // 压缩
-                    //    RarClass.Rar(folder, item);
-                    //}
-                    //else // 直接解压，没有目录
-                    //{
-                    //    var dir = Path.GetDirectoryName(file.FullName);
-                    //    var d = new DirectoryInfo(dir);
-                    //    var fsinfos = d.GetFileSystemInfos();
-
-                    //    var path = Path.GetDirectoryName(file.FullName);
-                    //    // 压缩
-                    //    foreach (var fileInfo in fsinfos)
-                    //    {
-                    //        RarClass.Rar(fileInfo.FullName, path);
-                    //    }
-                    //}
-                }
-
-                MessageBox.Show("操作成功！");
+                    else
+                    {
+                        File.Delete(fileOrDir.NodeName);
+                    }
+                }              
             }
-            catch (Exception e)
+
+            foreach (var item in FileTreeList)
             {
-                MessageBox.Show("操作失败！");
-                throw;
-            }      
+                // 压缩
+                RarClass.Rar(item.CurrNodeName, FilePath);
+                // 删除文件
+                FileHelper.DeleteFolder(item.CurrNodeName);
+
+                //if (!isHasParentDirectoryName) // 解压出来又一级目录
+                //{
+                //    // 压缩
+                //    RarClass.Rar(folder, item);
+                //}
+                //else // 直接解压，没有目录
+                //{
+                //    var dir = Path.GetDirectoryName(file.FullName);
+                //    var d = new DirectoryInfo(dir);
+                //    var fsinfos = d.GetFileSystemInfos();
+
+                //    var path = Path.GetDirectoryName(file.FullName);
+                //    // 压缩
+                //    foreach (var fileInfo in fsinfos)
+                //    {
+                //        RarClass.Rar(fileInfo.FullName, path);
+                //    }
+                //}
+            }
+
+            MessageBox.Show("操作成功！");
+            //}
+            //catch (Exception e)
+            //{
+            //    MessageBox.Show("操作失败！");
+            //    throw;
+            //}      
         }
 
         /// <summary>
@@ -279,12 +287,12 @@ namespace DelTool.ViewModels
             dialog.ShowDialog();
             var fileNames = dialog.FileNames;
 
-            if (fileNames!=null)
+            if (fileNames != null)
             {
                 var enumerable = fileNames as string[] ?? fileNames.ToArray();
                 FilePathShow(enumerable);
                 FileUnZipOrRar(enumerable);
-            }         
+            }
         }
 
         private void FilePathShow(IEnumerable<string> fileNames)
@@ -292,7 +300,7 @@ namespace DelTool.ViewModels
             FilePath = "";
             foreach (var item in fileNames)
             {
-                FilePath += item ;
+                FilePath += item;
             }
         }
 
@@ -307,20 +315,23 @@ namespace DelTool.ViewModels
 
                 foreach (var file in files)
                 {
+                    // 新建一个文件夹
+                    var folderStr = FileHelper.CrateFolder(file.FullName);
+                    _newFolderStr = folderStr;
+
                     // 解压文件
-                    RarClass.UnRar(file.FullName, item);
+                    RarClass.UnRar(file.FullName, folderStr);
+
                     // 删除原来的文件
                     File.Delete(file.FullName);
 
                     bool isHasParentDirectoryName = false;
 
                     // 获取：获取解压后的文件名称
-                    var folder = StringOperation.FilePthAndName(file.FullName, out isHasParentDirectoryName);      
-
-                    var oneLevelName = file.FullName.Replace(file.Extension, "");
+                    var folder = StringOperation.FilePthAndName(file.FullName, out isHasParentDirectoryName);
 
                     // 创建一级树
-                    CreateOneLevelTree(oneLevelName, file.Name);
+                    CreateOneLevelTree(folderStr, file.Name);
                     // 创建文件树
                     FileHelper.GetDirectory(FileTree.Nodes, folder);
                     // 创建树集合

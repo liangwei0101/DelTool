@@ -143,7 +143,7 @@
                   VerticalAlignment="Center">
                 <Button Visibility="{Binding DelVisibility}"
                         Style="{DynamicResource MaterialDesignRaisedButton}"
-                        Margin="0,60,0,0"
+                        Margin="0,40,0,0"
                         Width="100"
                         Height="30"
                         Content="删除"
